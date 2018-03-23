@@ -11,8 +11,8 @@
     3. [Test%2Ba%2BPerceptual%2BPhenomenon%2Bzh.html](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Term-2/blob/master/Project1/Test%2Ba%2BPerceptual%2BPhenomenon%2Bzh.html)（HTML版本项目报告）
     4. [Test%2Ba%2BPerceptual%2BPhenomenon%2Bzh.ipynb](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Term-2/blob/master/Project1/Test%2Ba%2BPerceptual%2BPhenomenon%2Bzh.ipynb)（Jupyter Notebook版本项目报告）
   - 原始数据格式：csv
-  - 编程语言和库：Python，NumPy，Pandas，Matplotlib，SciPy
-  - 分析平台：PostgreSQL，Excel
+  - 编程语言和库：Python，NumPy，Pandas，Matplotlib，SciPy
+  - 分析平台：PostgreSQL，Excel
   
 2. **课程项目II：清洗与分析推特数据**
   - [项目文件夹]()包含的文件
