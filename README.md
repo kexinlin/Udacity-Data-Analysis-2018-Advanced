@@ -15,11 +15,14 @@
   - 分析平台：PostgreSQL，Excel
   
 2. **课程项目II：清洗与分析推特数据**
-  - [项目文件夹]()包含的文件
-    1. []()（）
-    2. []()（）
-    3. []()（）
-    4. []()（）
-  - 原始数据格式：
-  - 编程语言和库：
-  - 分析平台：
+  - [项目文件夹](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/tree/master/Project2)包含的文件
+    1. [twitter-archive-enhanced.csv](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project2/twitter-archive-enhanced.csv)（通过网页直接下载的推特数据csv文件）
+    2. [image-predictions.tsv](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project2/image-predictions.tsv)（通过requests库下载的图片预测tsv文件）
+    3. [tweet_json.txt](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project2/tweet_json.txt)（通过API抓取的推特JSON数据）
+    4. [twitter_archive_master.csv](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project2/twitter_archive_master.csv)（数据清理之后的csv文件）
+    5. [twitter.db](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project2/twitter.db)（数据清理之后的数据库）
+    6. [wrangle_act.html](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project2/wrangle_act.html)（HTML版本项目报告）
+    7. [wrangle_act.ipynb](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project2/wrangle_act.ipynb)（Jupyter Notebook版本项目报告）
+  - 原始数据格式：csv，tsv，JSON
+  - 编程语言和库：Python，NumPy，Pandas，Requests，Tweepy，JSON，Matplotlib
+  - 分析平台：Jupyter Notebook
