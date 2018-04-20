@@ -1,0 +1,654 @@
+红葡萄酒质量数据集可视化探索
+========================================================
+> 在这个报告中，我将对包含 1,599 种红酒以及 11 个关于酒的化学成分和物理性质变量的数据集进行可视化探索。
+
+> 数据集详情见https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# 加载最终使用的所有组件
+# 将参数 "echo" 设为FALSE可以避免代码混入 HTML 输出显示
+# 将在文件中对所有代码块设为echo = FALSE 
+library(ggplot2)
+library(knitr)
+library(dplyr)
+library(gridExtra)
+```
+
+```{r echo=FALSE, Load_the_Data}
+# 加载数据
+wine <- read.csv('wineQualityReds.csv')
+```
+
+# 单变量绘图选择
+```{r echo=FALSE}
+str(wine)
+```
+
+可以看到数据集中包含了`1599`个观察值以及`13`个变量，且所有变量的类型均为数字。
+
+然后查看各个变量的统计学概要。
+
+```{r echo=FALSE}
+summary(wine)
+```
+
+对数据集有了基本了解后，开始对单变量进行可视化。
+
+由于`fixed.acidity`（非挥发性酸度，即酒石酸）、`volatile.acidity`（可挥发性酸度，即醋酸）以及`citric.acid`（柠檬酸）三个变量都是对葡萄酒所包含的酸（单位均为 g / dm^3）进行探索，因此可以对三个变量分布绘制直方图后将三幅图放在一起对比其分布。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+p1 <- ggplot(data=wine, aes(x=fixed.acidity)) + geom_histogram()
+p2 <- ggplot(data=wine, aes(x=volatile.acidity)) + geom_histogram()
+p3 <- ggplot(data=wine, aes(x=citric.acid)) + geom_histogram()
+grid.arrange(p1, p2, p3)
+```
+
+可以发现`fixed.acidity`和`volatile.acidity`两个变量的分布均接近正态分布，但是`citric.acid`并非呈正态分布。为了更准确地了解这一变量的分布，可以绘制频率多边形，并将`binwidth`设定为`0.01`。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=wine, aes(x=citric.acid)) + geom_freqpoly(binwidth=0.01)
+```
+
+可以看到`citric.acid`变量不呈偏态分布，因此无法通过对x轴进行`log10`或`sqrt`转换来得到正态分布。同时发现分布中存在多处峰值，例如观察值为`0.00`、`0.49`、`0.24`以及`0.02`的时候，因此也不属于均匀分布。
+
+然后对`residual.sugar`（残糖含量，单位为 g / dm^3）和`chlorides`（氯化物含量，即盐含量，单位为 g / dm^3）的分布进行查看。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+p4 <- ggplot(data=wine, aes(x=residual.sugar)) + 
+  geom_histogram(binwidth=0.1) + 
+  scale_x_continuous(lim=c(0, quantile(wine$residual.sugar, 0.99)))
+p5 <- ggplot(data=wine, aes(x=chlorides)) + 
+  geom_histogram(binwidth=0.005) + 
+  scale_x_continuous(lim=c(0, quantile(wine$chlorides, 0.99)))
+grid.arrange(p4, p5)
+```
+
+可以通过x轴范围看出红葡萄酒中的盐含量大大小于糖含量。然而两个变量的分布非常相似，均为正态分布。
+
+然后开始对`free.sulfur.dioxide`（游离二氧化硫含量，单位为 mg / dm^3）和`total.sulfur.dioxide`（总二氧化硫含量，单位为 mg / dm^3）进行探索。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+p6 <- ggplot(data=wine, aes(x=free.sulfur.dioxide)) + 
+  geom_histogram(binwidth=1)
+p7 <- ggplot(data=wine, aes(x=total.sulfur.dioxide)) + 
+  geom_histogram(binwidth=5)
+grid.arrange(p6, p7)
+```
+
+由于总二氧化硫含量包含了游离二氧化硫的含量，因此`total.sulfur.dioxide`的x轴右侧范围应当比`free.sulfur.dioxide`要大，可以从图中证实这一点。
+
+两个变量的分布都为右偏分布，因此可以通过对其x轴进行`log10`转换来尝试得到正态分布。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+p8 <- ggplot(data=wine, aes(x=free.sulfur.dioxide)) +
+  geom_histogram() + scale_x_log10(breaks=seq(0, 100, 10))
+p9 <- ggplot(data=wine, aes(x=total.sulfur.dioxide)) +
+  geom_histogram() + scale_x_log10(breaks=seq(0, 200, 20)) +
+  theme(axis.text.x=element_text(angle=45)) #设定坐标文字角度避免重叠
+grid.arrange(p8, p9)
+```
+
+转换之后`total.sulfur.dioxide`的分布非常接近正态分布，而`free.sulfur.dioxide`的分布稍有些偏差，主要由于转换前观察值为7到9范围的数量相比准确的右偏分布要更少。
+
+现在开始探索`density`（密度，单位为 g / cm^3）、`pH`（pH值）、`sulphates`（硫酸盐含量，单位为 g / cm^3）以及`alcohol`（酒精含量，单位为百分比）。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+p10 <- ggplot(data=wine, aes(x=density)) + geom_histogram()
+p11 <- ggplot(data=wine, aes(x=pH)) + geom_histogram()
+p12 <- ggplot(data=wine, aes(x=sulphates)) + geom_histogram()
+p13 <- ggplot(data=wine, aes(x=alcohol)) + geom_histogram()
+grid.arrange(p10, p11, p12, p13)
+```
+
+可以看到`density`和`pH`的分布接近正态，而`sulphates`和`alcohol`的分布接近右偏分布。因此，还是对`sulphates`和`alcohol`的x轴进行`log10`转换以尝试得到正态分布。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+p14 <- ggplot(data=wine, aes(x=sulphates)) + 
+  geom_histogram() + scale_x_log10(breaks=seq(0, 10, 0.1)) +
+  theme(axis.text.x=element_text(angle=45))
+p15 <- ggplot(data=wine, aes(x=alcohol)) + 
+  geom_histogram() + scale_x_log10(breaks=seq(0, 20, 1))
+grid.arrange(p14, p15)
+```
+
+转换之后`sulphates`的分布非常接近正态分布，而`alcohol`的分布稍有些偏差，主要由于转换前观察值为8到9的数量相比准确的右偏分布要更少。
+
+接下来，对`quality`（葡萄酒评级，评分在0分到10分之间）变量进行探索。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=wine, aes(x=factor(quality))) + geom_bar()
+```
+
+可以看到得到质量中等（评分为5分或6分）的葡萄酒数量相比质量较差（评分为3分和4分）以及质量较好（评分为7分和8分）要更多，且在此数据集中不包含极端质量的葡萄酒，具体来说是评分为1分和2分的质量极低葡萄酒和评分为9分和10分的质量极高的葡萄酒。
+
+对了让后续分组探索更加方便，可以创建`quality.group`变量并根据`quality`对葡萄酒进行分组。具体规则是`quality`为`3`或`4`的葡萄酒被分入`quality.group`的`low`组，`quality`为`5`或`6`的葡萄酒被分入`quality.group`的`medium`组，`quality`为`7`或`8`的葡萄酒被分入`quality.group`的`high`组。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+wine$quality.group <- cut(wine$quality, c(2, 4, 6, 8), 
+                          labels=c('low', 'medium', 'high'), 
+                          ordered_result=TRUE)
+```
+
+创建`quality.group`这个`factor`类型的变量后，以后就可以再对各个数值变量进行分组探索，目的在于寻找哪个单变量是造成葡萄酒评级差异的关键因素。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# 创建一个名为univariate.group.plot的函数，目的在于减少分组后对各个变量创建直方图所需的代码。
+univariate.group.plot <- function(variable_name){
+  ggplot(data=wine, aes(x=variable_name)) + 
+    geom_histogram() + facet_wrap(~quality.group, 
+                                  ncol=1, scales='free_y')
+  }
+```
+
+`fixed.acidity`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$fixed.acidity) + xlab('fixed acidity') +
+  scale_x_continuous(breaks=seq(4, 16, 2))
+```
+
+可以看到，质量较高的葡萄酒的`fixed.acidity`分布的峰值似乎略微高于质量较低的葡萄酒，然而由于`low`和`high`组的葡萄酒质量较少，并不能对此关系给出确定的结论。
+
+`volatile.acidity`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$volatile.acidity) + xlab('volatile acidity')
+```
+
+从上图看出`volatile.acidity`与`quality`似乎并不存在显著关联。
+
+`citric.acid`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$citric.acid) + xlab('citric acid')
+```
+
+从上图中看出`citric.acid`与`quality`似乎并不存在显著关联。
+
+`residual.sugar`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$residual.sugar) + xlab('residual sugar') + 
+  scale_x_continuous(lim=c(0, quantile(wine$residual.sugar, 0.99)))
+```
+
+从上图看出`residual.sugar`与`quality`似乎并不存在显著关联。
+
+`chlorides`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$chlorides) + xlab('chlorides') + 
+  scale_x_continuous(lim=c(0, quantile(wine$chlorides, 0.99)))
+```
+
+从上图看出`chlorides`与`quality`似乎并不存在显著关联。
+
+`free.sulfur.dioxide`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$free.sulfur.dioxide) + 
+  xlab('free sulfur dioxide')
+```
+
+从上图看出`free.sulfur.dioxide`与`quality`似乎并不存在显著关联。
+
+`total.sulfur.dioxide`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$total.sulfur.dioxide) + 
+  xlab('total sulfur dioxide')
+```
+
+从上图看出`total.sulfur.dioxide`与`quality`似乎并不存在显著关联。
+
+`density`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$density) + xlab('density')
+```
+
+从上图看出，`high`组葡萄酒的`density`分布中心的值要低于`medium`和`low`组，说明密度和葡萄酒质量可能存在联系，且具体猜测为质量较高的葡萄酒密度更低。
+
+然而，`low`组分布的峰值和`medium`组分布的峰值在上图中不存在差异，而且先前提到的`low`组和`high`组观察值较少的问题也给这一观察结论造成了某种程度上的不确定性。
+
+`pH`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$pH) + xlab('pH')
+```
+
+从上图看出`pH`与`quality`似乎并不存在显著关联。
+
+`sulphates`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$sulphates) + xlab('sulphates')
+```
+
+从上图看出`sulphates`与`quality`似乎并不存在显著关联。
+
+`alcohol`变量在分组后绘制的直方图如下。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+univariate.group.plot(wine$alcohol) + xlab('alcohol')
+```
+
+从上图看出，质量较高的葡萄酒中酒精百分比大于10%的数量占比似乎略高于其它组，然而仅从图中无法得到质量高的葡萄酒酒精含量普遍较高的结论。
+
+# 单变量分析
+
+### 你的数据集结构是什么？
+原数据集包含了`1599`个观察值以及`13`个变量，且其中所有变量的类型均为数字。
+
+### 你的数据集内感兴趣的主要特性有哪些？
+我在此数据集内感兴趣的主要特征在于葡萄酒的评级，即`quality`这列变量的值，原因是除了第一列`X`以外，其它列均为葡萄酒在化学和物理方面的特征的数值，因此我希望探索那些化学特征变量是如何与葡萄酒评级关联的。
+
+### 你认为数据集内哪些其他特征可以帮助你探索兴趣特点？
+我认为除了`X`列以外，其它变量均可以作为输入变量来帮助我探索`quality`这一输出变量。
+
+### 根据数据集内已有变量，你是否创建了任何新变量？
+为了对不同质量的葡萄酒进行分组探索，我根据数据集中`quality`的值增加了一列名为`quality.group`类型为`factor`的变量。
+
+### 在已经探究的特性中，是否存在任何异常分布？你是否对数据进行一些操作，如清洁、调整或改变数据的形式？如果是，你为什么会这样做？
+此数据集不存在整洁度和质量方面的问题，因此我直接跳过了数据清洗的过程。
+在上面对各个变量绘制直方图的过程中，我发现每个图基本或多或少都存在一定数量的异常值。然而，我只对`residual.sugar`和`chlorides`这两个变量进行了x轴上99%分位数的范围限定，原因是这两个变量存在距离分布的中心非常远的异常值，而其它变量的异常值虽然存在但是距离分布的中心并不远，不会影响直方图的呈现。
+大部分变量的直方图分布都呈正态，除了`free.sulfur.dioxide`、`total.sulfur.dioxide`、`sulphates`以及`alcohol`这四个变量的分布呈右偏，因此我选择对其x轴进行`log10`转换，以尝试得到正态分布。
+
+
+# 双变量绘图选择
+
+对于双变量的绘图，我首先对根据经验推测会存在关联的变量绘制散点图，以验证它们之间的关系。
+
+首先，由于pH值是一个用于衡量酸碱值的指标，我猜测`fixed.acidity`和`pH`存在线性关系。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=wine, aes(x=fixed.acidity, y=pH)) + 
+  geom_point(alpha=1/3) + scale_x_continuous(breaks=seq(0, 16, 2))
+```
+
+从上面的散点图中可以看出线性趋势的存在，为了使这一趋势更加明显，计算各个`fixed_acidity`对应的平均`pH`值后绘制折线图，并利用`geom_smooth`来得到线性预测。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=wine, aes(x=fixed.acidity, y=pH)) + 
+  geom_line(stat='summary', fun.y=mean) + geom_smooth(method='lm') + 
+  scale_x_continuous(breaks=seq(0, 16, 2))
+```
+
+可以看到折现的走势和线性回归模型的预测较为接近，因此`pH`和`fixed.acidity`存在一定程度上的线性关系。
+
+然后通过相关系数验证这一线性关系的强度。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+print(cor(wine$fixed.acidity, wine$pH))
+```
+
+由于得到的相关系数的绝对值约为`0.7`，这一线性关系的相关性较强。
+
+验证了`fixed.acidity`和`pH`的关系后，我猜测`volatile.acidity`和`pH`可能也存在较强的线性关系，因此继续通过散点图来进行探索。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=wine, aes(x=volatile.acidity, y=pH)) + geom_point(alpha=1/3)
+```
+
+然而上面得到的散点图很难看出线性关系，因此继续用相关系数进行检验。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+print(cor(wine$volatile.acidity, wine$pH))
+```
+
+得到的相关系数约为`0.2`，说明`volatile.acidity`和`pH`并不存在较强的线性关系，推翻了先前的预测。
+
+接下来，我选择对`density`和`alcohol`变量绘制散点图，原因是酒精的密度相比水更小，我推测葡萄酒的酒精含量越高，密度越小。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=wine, aes(x=alcohol, y=density)) + geom_point(alpha=1/3)
+```
+
+散点图中可以隐约看出向下的线性趋势，但是相关强度还是需要通过计算相关系数才能得到。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+print(cor(wine$alcohol, wine$density))
+```
+
+相关系数的计算结果约为`-0.5`，说明`density`和`alcohol`之间存在中等强度的线性相关性。
+
+下面对`free.sulfur.dioxide`和`total.sulfur.dioxide`两个变量进行探索，原因是总二氧化硫的含量必然包含了游离二氧化硫的含量。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=wine, aes(x=free.sulfur.dioxide, y=total.sulfur.dioxide)) + 
+  geom_point(alpha=1/3)
+```
+
+可以看到散点图的顶端和右端存在几个异常值，拉大了x轴和y轴的范围，因此通过`free.sulfur.dioxide`和`total.sulfur.dioxide`两个变量上端的99%分位数来过滤掉那几个异常值。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=wine, aes(x=free.sulfur.dioxide, y=total.sulfur.dioxide)) + 
+  geom_point(alpha=1/3) + 
+  scale_y_continuous(lim=c(0, quantile(wine$total.sulfur.dioxide, 0.99))) + 
+  scale_x_continuous(lim=c(0, quantile(wine$free.sulfur.dioxide, 0.99)))
+```
+
+去除异常值后可以看到，放大后的散点图在左下端部分较为集中，在右上端部分较为分散。我还可以再次通过计算各个`free.sulfur.dioxide`的平均`total.sulfur.dioxide`值后绘制折线图，并利用`geom_smooth`得到线性预测。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=wine, aes(x=free.sulfur.dioxide, y=total.sulfur.dioxide)) + 
+  geom_line(stat='summary', fun.y=mean) + 
+  scale_y_continuous(lim=c(0, quantile(wine$total.sulfur.dioxide, 0.99))) + 
+  scale_x_continuous(lim=c(0, quantile(wine$free.sulfur.dioxide, 0.99))) + 
+  geom_smooth(method='lm')
+```
+
+通过折线图和线性模型的直线，可以从中看出较为明显的向上趋势。
+
+然后还是通过计算相关系数来得到这一线性关系的强度。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+print(cor(wine$free.sulfur.dioxide, wine$total.sulfur.dioxide))
+```
+
+结果约为0.7，说明这一线性关系的强度较强，且方向为正。
+
+接下来，我将利用箱线图来探索`quality.group`和其它变量之间的关系。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# 创建bivariate.boxplot函数以减少重复绘制箱线图所需的代码
+bivariate.boxplot <- function(variable.name){
+  ggplot(data=wine, aes(x=quality.group, y=variable.name)) + 
+    geom_boxplot() + xlab('quality group')
+  } 
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+b1 <- bivariate.boxplot(wine$fixed.acidity) + ylab('fixed acidity')
+b2 <- bivariate.boxplot(wine$volatile.acidity) + ylab('volatile acidity')
+b3 <- bivariate.boxplot(wine$citric.acid) + ylab('citric acid')
+b4 <- bivariate.boxplot(wine$residual.sugar) + ylab('residual sugar')
+grid.arrange(b1, b2, b3, b4)
+```
+
+从上面四幅箱线图的中位数线可以看出，`fixed.acidity`和`citric.acidity`和`quality`的评级似乎呈正向关系，而`volatile.acidity`和`quality`的评级似乎呈负相关系。
+
+在先前对单一变量的分组探索过程中，通过直方图只能从以上四个变量中看出`fixed.acidity`与`quality.group`之间存在联系，原因是我在观察直方图时主要注意点在分布的峰值上面，即众数，而这里的箱线图突出显示的是中位数。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+b5 <- bivariate.boxplot(wine$chlorides) + ylab('chlorides')
+b6 <- bivariate.boxplot(wine$free.sulfur.dioxide) + 
+  ylab('free sulfur dioxide')
+b7 <- bivariate.boxplot(wine$total.sulfur.dioxide) + 
+  ylab('total sulfur dioxide')
+b8 <- bivariate.boxplot(wine$density) + ylab('density')
+grid.arrange(b5, b6, b7, b8)
+```
+
+从上面四副箱线图中无法通过中位数看出四个变量中任何一个与`quality.group`之间的联系。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+b9 <- bivariate.boxplot(wine$pH) + ylab('pH')
+b10 <- bivariate.boxplot(wine$sulphates) + ylab('sulphates')
+b11 <- bivariate.boxplot(wine$alcohol) + ylab('alcohol')
+grid.arrange(b9, b10, b11, ncol=2)
+```
+
+上面三幅箱线图展示了``sulphates`各组中位数和`quality.group`的正向关系，以及`pH`各组中位数和`quality.group`的负向关系。
+
+对于`alcohol`变量，质量较高的葡萄酒的酒精含量大部分都高于质量中等和质量较差的葡萄酒，然而质量中等的葡萄酒的酒精含量并并不比质量较差的葡萄酒要更高，因此这里无法通过箱线图展现的中位数线得到`alcohol`和`quality.group`之间的正向关系。
+
+
+# 双变量分析
+
+### 探讨你在这部分探究中观察到的一些关系。这些感兴趣的特性与数据集内其他特性有什么区别？
+在这一部分中，我首先对根据经验猜测存在关联的变量进行了可视化探索，通过散点图和折线图观察到了`fixed.acidity`与`pH`还有`density`与`alcohol`之间的负线性相关关系，以及`total.sulfur.dioxide`与`free.sulfur.dioxide`之间的正线性相关关系。接下来我对各个变量与`quality.group`绘制了箱线图，通过各个中位数线观察到了`fixed.acidity`、`citric.acid`以及`sulphates`与`quality.group`的正向关系，以及`volatile`和`pH`与`quality.group`的负向关系。其它特征则没有在图中展现出明显的相关关系。
+
+### 你是否观察到主要特性与其他特性之间的有趣关系？
+从箱线图的中位数线来看，作为主要特征，`quality.group`与`fixed.acidity`、`citric.acid`以及`sulphates`存在正向关系，与`volatile`和`pH`存在负向关系。
+
+### 你发现最强的关系是什么？
+我发现的最强的关系存在于`fixed.acidity`和`pH`之间，因为通过计算得到线性相关度约为`-0.7`，说明是较强的负线性相关关系。
+
+
+# 多变量绘图选择
+
+我首先会对在上一个部分发现的存在线性关系的双变量引入`quality.group`作为第三个变量，探索对于不同质量的葡萄酒其线性关系是否继续保持。
+
+在双变量可视化探索中发现存在线性关系的变量组有：`fixed.acidity`和`pH`、`density`和`alcohol`以及`free.sulfur.dioxide`和`total.sulfur.dioxide`。
+
+首先探索`pH` vs.`fixed.acidity`。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# 定义函数multivariate.scatter，减少后续绘制散点图和线性回归模型所需的代码
+multivariate.scatter <- function(x.var, y.var, palette.num){
+  ggplot(data=wine, aes(x=x.var, y=y.var)) + 
+    geom_point(aes(color=quality.group), position='jitter') + 
+    scale_color_brewer(palette=palette.num) + 
+    geom_smooth(aes(color=quality.group), method='lm') + theme_dark()
+}
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.scatter(x.var=wine$fixed.acidity, y.var=wine$pH, palette.num=1) +
+  xlab('fixed acidity') + ylab('pH')
+```
+
+可以看到由于三条直线几近重合，说明对于不同的`quality.group`，`fixed.acidity`和`pH`之间的线性关系不存在太大差异，即，当`fixed.acidity`的值相同时，不同质量葡萄酒的`pH`值相差不大。
+
+接下来对`density` vs. `alcohol`进行探索。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.scatter(x.var=wine$alcohol, y.var=wine$density, palette.num=11) +
+  scale_x_continuous(lim=c(quantile(wine$alcohol, 0.01), 
+                             quantile(wine$alcohol, 0.99))) + 
+  scale_y_continuous(lim=c(quantile(wine$density, 0.01), 
+                           quantile(wine$density, 0.99))) +
+  xlab('alcohol') + ylab('density')
+```
+
+可以看到三条线性预测直线的方向相同都是朝下，然而`high`斜率的绝对值大于`medium`，而`medium`斜率的绝对值又大于`low`，说明根据上图的线性回归来预测的话，质量高的葡萄酒酒精含量越高，密度下降就可能越大。同时还可以推测，酒精含量相同且小于13%时，高质量的葡萄酒密度可能会更大。
+
+然后进行`total.sulfur.dioxide` vs. `free.sulfur.dioxide`的探索。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.scatter(x.var=wine$free.sulfur.dioxide, 
+                     y.var=wine$total.sulfur.dioxide, palette.num=2) +
+  xlab('free sulfur dioxide') + ylab('total sulfur dioxide')
+```
+
+可以发现无论从散点图还是线性模型来看，葡萄酒的质量似乎不会对`free.sulfur.dioxide`和`total.sulfur.dioxide`之间的关系产生什么影响。
+
+在上一部分的双变量探索中，我还通过箱线图的中位数线发现了可能对`quality.group`有影响的变量，例如`fixed.acidity`、`volatile.acidity`、`citric.acid`和`sulphates`。
+
+在下面的可视化过程中，我会将这些特征作为y轴的值，然后将其它特征作为x轴的值，然后引入`quality.group`变量作为颜色来增加粒度，目的是探索当其它条件发生变化时这些特征对`quality.group`的影响是否产生变化。
+
+首先探究`fixed.acidity`在`residual.sugar`变化时与`quality.group`的关系。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.scatter(x.var=wine$residual.sugar, y.var=wine$fixed.acidity, 
+                     palette.num=7) + 
+  scale_x_continuous(lim=c(0, quantile(wine$residual.sugar, 0.95))) +
+  xlab('residual sugar') + ylab('fixed acidity')
+```
+
+从上面的三条线性模型的位置可以看出，`residual.sugar`发生变化的时候，`fixed.acidity`与`quality.group`的关系依旧是正向的，即酒石酸含量越高的红葡萄，质量评级也可能越高，不论其残糖含量处于哪个范围。
+
+从线性模型的斜率来看，对于质量中等和较好的葡萄酒，其残糖含量和非挥发性酸含量似乎存在正向联系，而对于质量较差的葡萄酒，这一关系则不明显。
+
+除了利用散点图和平滑器，我还可以通过计算各个`0.5`范围的`residual.sugar`对应的`fixed.acidity`平均值来绘制折线图，从而能够从另一个角度来展示这三个变量之间的关系。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# 创建函数multivariate.line，减少后续绘制折线图时所需的代码
+multivariate.line <- function(x.var, y.var, round.num, palette.num){
+  ggplot(data=wine, aes(x=round(x.var/round.num)*round.num, y=y.var)) +
+    geom_line(aes(color=quality.group), stat='summary', fun.y=mean) +
+    theme_dark() + scale_color_brewer(palette=palette.num)
+}
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.line(wine$residual.sugar, wine$fixed.acidity, 0.5, 7) + 
+  scale_x_continuous(lim=c(0, quantile(wine$residual.sugar, 0.95))) +
+  xlab('residual sugar') + ylab('fixed acidity')
+```
+
+从折线图来看，先前线性回归模型的斜率展示的残糖含量和非挥发性酸之间的正向关系变得不明显了，原因是线性回归无法很好地展示非单调性关系，因此可能会从中得到不准确结论。
+
+然而，从折线图中得到的以下结论与线性回归模型一致：不论`residual.sugar`的值为多少，`fixed.acidity`对`quality.group`的影响仍然是正向的。
+
+然后开始探索当`pH`发生变化时`fixed.acidity`与`quality.group`的关系。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.scatter(x.var=wine$pH, y.var=wine$volatile.acidity, 
+                     palette.num=3) +
+  xlab('pH') + ylab('volatile acidity')
+```
+
+这里从线性回归模型可以看出，不论pH值如何变化，可挥发性酸的含量越低，葡萄酒的评级也就可能会越高。
+
+下面还是用同样的方法绘制折线图。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.line(wine$pH, wine$volatile.acidity, 0.2, 3) + 
+  xlab('pH') + ylab('fixed acidity')
+```
+
+从折线图中各个线的位置可以得到的结论与上面的散点图相同，即，`volatile.acidity`与`quality.group`存在负向关系。
+
+现在开始探索当`density`发生变化时`citric.acid`与`quality.group`的关系。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.scatter(x.var=wine$density, y.var=wine$citric.acid, 
+                     palette.num=5) +
+  xlab('density') + ylab('citric acid')
+```
+
+上图的三个线性回归模型均展示了`citric.acid`与`density`的正向关系。同时，回归模型的相对位置也说明了`citric.acid`对`quality.group`存在正向的影响，即`density`的变化很可能不会改变“红葡萄酒中柠檬酸的含量越高，葡萄酒的评级也越高”这一现象。
+
+然后对相同的变量绘制折线图。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.line(wine$density, wine$citric.acid, 0.005, 5) + 
+  xlab('density') + ylab('citric acid')
+```
+
+上图中三条折线的走向肯定了`citric.acid`与`density`之间的正向关系，说明葡萄酒中柠檬酸含量的增长会提升葡萄酒的密度。同时，其相对位置也证明了`citric.acid`对`quality.group`存在正向的影响。
+
+最后，我对当`alcohol`发生变化时`sulphates`与`quality.group`的关系进行展示。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.scatter(x.var=wine$alcohol, y.var=wine$sulphates, palette.num=14) +
+  scale_x_continuous(breaks=seq(8, 15, 1)) + 
+  scale_y_continuous(lim=c(0.3, 1.2)) +
+  xlab('alcohol') + ylab('sulphates')
+```
+
+从上图来看，回归模型的斜率接近`0`，说明`alcohol`与`sulphates`之间不存在线性关系。而直线的相对位置则说明`sulphates`对`quality.group`可能存在正向联系。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+multivariate.line(wine$alcohol, wine$sulphates, 0.5, 14) + 
+  xlab('alcohol') + ylab('sulphates') + 
+  scale_x_continuous(breaks=seq(8, 15, 1))
+```
+
+折线的走势说明`alcohol`和`suplphates`之间的确不存在线性关系，而`high`的折线位置最高，`medium`在中间，`low`处于低端再次证明了先前散点图中得到的结论，即葡萄酒中硫酸盐含量越高，葡萄酒的质量评级也就可能越高。
+
+
+# 多变量分析
+
+###  探讨你在这部分探究中观察到的一些关系。通过观察感兴趣的特性，是否存在相互促进的特性？
+在这一部分中，我观察到了`fixed.acidity`、`citric.acid`以及`sulphates`这三个变量与红葡萄酒的评级存在正向关系，说明这些特征与`quality`相互促进，而`volatile.acidity`则与评级存在负向关系。这些发现均与上个部分通过箱线图的中位数线得到的结论相符。
+
+
+### 这些特性之间是否存在有趣或惊人的联系呢？
+在先前对双变量的探索过程中，我并没有对`citric.acid`与`density`这两个变量进行散点图的可视化，原因是我没有推断出两者之间可能存在的联系。然而，在上面多个变量的探索过程中，我意识到了柠檬酸和葡萄酒密度之间存在正向关系，这是一个有趣的发现。后来经过查阅资料得知，此关系存在的原因是柠檬酸溶液的密度比水更高。
+
+
+### 你是否创建过数据集的任何模型？讨论你模型的优缺点。
+我为散点图创建了线性回归模型。这一模型的优点在于可以很直观地显示出肉眼难以从较为分散的各个数据点中发现的线性关系；缺点在于线性回归模型对于两个变量之间的非线性关系容易产生误导性，因为其无法在图中展示非单调性特征。
+
+------
+
+# 定稿图与总结
+
+### 绘图一
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_One}
+ggplot(data=wine, aes(x=factor(quality))) + 
+  geom_bar(aes(fill=quality.group)) +
+  scale_y_continuous(breaks=seq(0, 700, 100)) +
+  ggtitle('Distribution of Wine Quality') +
+  ylab('number of wine') +
+  xlab('quality') +
+  labs(fill='quality group') +
+  scale_fill_brewer() + theme_dark() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+### 描述一
+从上图可以看出，在此红葡萄酒的数据集中，大部分的葡萄酒的评级都是`5`或`6`，数量超过了`600`种，评级为`4`或`7`的葡萄酒数量较少，而评级为`3`和`8`的葡萄酒数量就更少了，甚至小于50种。这说明质量中等的葡萄酒要比质量较好或质量较差的葡萄酒更多，且质量越靠近极端数量就越少，这一现象符合正态分布。
+
+### 绘图二
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Two}
+f1 <- bivariate.boxplot(wine$fixed.acidity) + ylab('fixed acidity (g / dm^3)') +
+  geom_boxplot(aes(color=quality.group), show.legend=FALSE) +
+  scale_y_continuous(breaks=seq(0, 16, 2)) + 
+  ggtitle('Fixed Acidity vs. Quality Group') +
+  scale_color_brewer() + theme_dark()
+f2 <- bivariate.boxplot(wine$volatile.acidity) + 
+  ylab('volatile acidity (g / dm^3)') +
+  geom_boxplot(aes(color=quality.group), show.legend=FALSE) + 
+  ggtitle('Volatile Acidity vs. Quality Group') +
+  scale_color_brewer() + theme_dark()
+f3 <- bivariate.boxplot(wine$citric.acid) + ylab('citric acid (g / dm^3)') +
+  geom_boxplot(aes(color=quality.group), show.legend=FALSE) + 
+  ggtitle('Citric Acid vs. Quality Group') +
+  scale_color_brewer() + theme_dark()
+f4 <- bivariate.boxplot(wine$sulphates) + ylab('sulphates (g / dm^3)') +
+  geom_boxplot(aes(color=quality.group), show.legend=FALSE) + 
+  ggtitle('Sulphates vs. Quality Group') +
+  scale_color_brewer() + theme_dark()
+grid.arrange(f1, f2, f3, f4)
+```
+
+### 描述二
+从上面四幅箱线图中可以发现，`fixed.acidity`、`citric.acid`以及`sulphates`这三个变量的中位数和`quality.group`之间存在正向关系，即质量越高的组，这些变量观察值的中位数就越高，而`volatile.acidity`这一变量的中位数和`quality.group`之间存在负向关系，即质量越高的组，这一变量观察值的中位数就越低。
+
+
+### 绘图三
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Three}
+f5 <- multivariate.scatter(wine$fixed.acidity, wine$pH, palette.num=1) +
+  xlab('fixed acidity (g / dm^3)') + ylab('pH') + 
+  scale_x_continuous(breaks=seq(0, 16, 2), lim=c(5, 16)) +
+  scale_y_continuous(breaks=seq(0, 4, 0.2), lim=c(2.8, 4)) +
+  ggtitle('pH vs. Fixed Acidity') +
+  theme(plot.title = element_text(hjust = 0.5))
+f6 <- multivariate.line(wine$fixed.acidity, wine$pH, 1, palette.num=1) +
+  scale_x_continuous(breaks=seq(0, 16, 2, lim=c(5, 16))) +
+  scale_y_continuous(breaks=seq(0, 4, 0.2), lim=c(2.8, 4)) +
+  xlab('fixed acidity (g / dm^3)') + ylab('pH') +
+  ggtitle('pH vs. Fixed Acidity') +
+  theme(plot.title = element_text(hjust = 0.5))
+grid.arrange(f5, f6)
+```
+
+### 描述三
+从第一幅散点图和线性回归模型中可以看出，`pH`和`fixed.acidity`之间存在较为明显的负向线性关系，因此可以预测红葡萄酒中非挥发性酸的含量越高，pH值就越低。而且，代表不同质量组的的三条回归线几近重合，说明此线性关系的系数不会随着葡萄酒质量的改变而发生变化。
+第二幅折线图则是展示了各个以`1`为计算区间的`fixed.acidity`所对应平均`pH`值。创建此图的目的在于，一是可以验证模型的选择，由于线性模型无法展示非单调性关系，而折线图却可以很好地展示，因此通过折线图可以检查符合的回归模型是否真的应该为线性的；二是查看代表不同质量组的线是否在计算平均值的折线图中依旧维持重合或交缠的状态，由于在上面的折线图中三条线依旧接近重合，验证了通过散点图的回归线得到的结论，即pH值和非挥发性酸含量之间线性关系的系数不会随着葡萄酒质量的改变而发生变化。
+
+------
+
+# 反思
+在此次通过`R`语言进行的探索中，我首先利用直方图对各个变量的分布进行了可视化展示，发现了常见的正态分布，例如`pH`，也发现了个别变量的分布为右偏，例如`free.sulfur.dioxide`。由于在此次探索我最感兴趣的变量是`quality`，因此在对葡萄酒质量进行分组后，我再次绘制了各个变量直方图，并根据其分布形状和峰值判断出了`fixed.volatile.acidity`、`density`以及`alcohol`可能和`quality`存在关系。当然，这一结论仅根据众数得到，所以可能缺乏准确性。接下来，我通过散点图、折线图、线性回归模型以及相关系数去验证自己根据经验猜测会存在线性关系的双变量，具体为`fixed.acidity`和`pH`、`density`和`alcohol`以及`free.sulfur.dioxide`和`total.sulfur.dioxide`。然后我通过各个变量不同质量组的箱线图发现，`fixed.acidity`、`volatile`、`citric.acid`、`pH`以及`sulphates`这五个变量与葡萄酒质量有关联，但由于这一判断仅依据箱线图中各组变量观察值的中位数线，无法完全确定。在最后的对多变量进行探索的部分，我通过对先前发现了线性关系的双变量的散点图进行根据质量的分组，然后通过分组后的线性回归模型再次验证了那些线性关系的系数不会随着不同质量组而发生变化。
+
+分析阶段中遇到的主要困难在于，不同质量的葡萄酒在数据集中数量相差很大，比如评级为`3`的葡萄酒数量只有不到 20 种，而评级为`5`的葡萄酒数量则超过了 650 种。这一现象符合正态分布，然而也造成了散点图上各组数据点的数量不均，代表中等质量葡萄酒的数据点占了图中很大一部分面积并且覆盖了其它颜色数据点，因此难以通过数据点的颜色分组看出端倪。我的解决方式是首先调整数据点的透明度，避免完全覆盖，然后通过线性回归模型展现肉眼难以看出的关系。
+
+分析阶段取得成功的例子是，在对双变量进行可视化探索的阶段，我顺利找到了三组线性关系较强的双变量，并且通过相关系数进行了验证。
+
+如果在后续阶段继续完善这个报告，我可能会尝试从统计学和多变量的回归模型入手。推论统计学可以利用数据计算验证可视化过程中产生的猜测，而建立多变量的回归模型之后就可以通过葡萄酒各个属性的参数对其质量评级直接进行预测。
+
+
+# 参考网站
+http://ggplot2.tidyverse.org/reference/scale_brewer.html
+
+https://s3.cn-north-1.amazonaws.com.cn/static-documents/nd002/DataAnalysiswithRCreatingEffectivePlots.pdf
+
+http://www.sthda.com/english/wiki/ggplot2-themes-and-background-colors-the-3-elements
+
+https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt
+
