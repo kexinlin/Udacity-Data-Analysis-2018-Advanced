@@ -29,13 +29,13 @@
   
 3. **课程项目III：用R语言进行探索性数据分析**
   - [项目文件夹](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/tree/master/Project3)包含的文件
-      1. [wineQualityReds.csv](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project3/wineQualityReds.csv)（原始数据csv文件） 
-      2. [wineQualityInfo.txt](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project3/wineQualityInfo.txt)（原始数据介绍） 
-      3. [projectTemplate-zh.rmd](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project3/projectTemplate-zh.rmd)（R Markdown格式可视化报告） 
-      4. [projectTemplate-zh.html](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project3/projectTemplate-zh.html)（HTML格式可视化报告）  
-  - 原始数据格式：csv
-  - 编程语言和库：R，ggplot2，gridExtra，knitr 
-  - 分析平台： RStudio
+      1. [wineQualityReds.csv](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project3/wineQualityReds.csv)（原始数据csv文件） 
+      2. [wineQualityInfo.txt](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project3/wineQualityInfo.txt)（原始数据介绍） 
+      3. [projectTemplate-zh.rmd](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project3/projectTemplate-zh.rmd)（R Markdown格式可视化报告） 
+      4. [projectTemplate-zh.html](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project3/projectTemplate-zh.html)（HTML格式可视化报告）  
+  - 原始数据格式：csv
+  - 编程语言和库：R，ggplot2，gridExtra，knitr 
+  - 分析平台： RStudio
   
   4. **课程项目IV：**
   - [项目文件夹]()包含的文件
