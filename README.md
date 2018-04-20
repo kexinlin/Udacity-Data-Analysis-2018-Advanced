@@ -27,8 +27,8 @@
   - 编程语言和库：Python，NumPy，Pandas，Requests，Tweepy，JSON，Matplotlib
   - 分析平台：Jupyter Notebook
   
-  3. **课程项目III：用R语言进行探索性数据分析**
-    - [项目文件夹]()包含的文件
+3. **课程项目III：用R语言进行探索性数据分析**
+  - [项目文件夹]()包含的文件
       1. []()（） 
       2. []()（） 
       3. []()（） 
