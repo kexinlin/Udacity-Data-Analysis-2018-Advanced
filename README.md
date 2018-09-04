@@ -37,13 +37,14 @@
   - 编程语言和库：R，ggplot2，gridExtra，knitr 
   - 分析平台： RStudio
  
- 4. **课程项目IV：**
-  - [项目文件夹]()包含的文件
-      1. []()（） 
-      2. []()（） 
-      3. []()（） 
-      4. []()（） 
-      5. []()（） 
-  - 原始数据格式： 
-  - 编程语言和库： 
-  - 分析平台： 
+ 4. **课程项目IV：创建一个Tableau故事**
+  - [项目文件夹](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/tree/master/Project4)包含的文件
+      1. [ShanghaiPM20100101_20151231.csv](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project4/ShanghaiPM20100101_20151231.csv)（原始数据csv文件） 
+      2. [ShanghaiPM_info.txt](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project4/ShanghaiPM_info.txt)（原始数据介绍） 
+      3. [ShanghaiPM_CleaningProcess.ipynb](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project4/ShanghaiPM_CleaningProcess.ipynb)（Jupyter Notebook版本数据清理过程） 
+      4. [ShanghaiPM_CleaningProcess.html](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project4/ShanghaiPM_CleaningProcess.html)（HTML版本数据清理过程） 
+      5. [ShanghaiPM_cleaned.csv](https://github.com/kexinlin/Udacity-Data-Analysis-2018-Advanced/blob/master/Project4/ShanghaiPM_cleaned.csv)（清理完成后csv文件）
+      6. [项目报告](https://public.tableau.com/profile/kexin.lin#!/vizhome/Project4_enhanced/sheet0)
+  - 原始数据格式： csv
+  - 编程语言和库： Python，pandas
+  - 可视化平台：Tableau 
